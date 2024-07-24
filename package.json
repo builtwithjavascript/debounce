@@ -1,0 +1,67 @@
+{
+  "name": "@builtwithjavascript/debounce",
+  "version": "1.0.0",
+  "description": "Debounce function hook useDebounce.",
+  "author": "builtwithjavascript",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/builtwithjavascript/debounce.git"
+  },
+  "bugs": {
+    "url": "https://github.com/builtwithjavascript/debounce/issues"
+  },
+  "homepage": "https://github.com/builtwithjavascript/debounce#readme",
+  "keywords": [
+    "debounce, utils, helpers, javascript"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build-types": "tsc src/index.ts --esModuleInterop --declaration --emitDeclarationOnly --outDir dist",
+    "build": "tsc --esModuleInterop && vite build && npm run build-types",
+    "pub": "npm publish --access public",
+    "test": "TESTING=true vitest run",
+    "test-watch": "TESTING=true vitest watch",
+    "pretty": "prettier -w \"./src/**/*.ts\"",
+    "version-patch": "npm run pretty && npm version patch -m \"Patch version\"",
+    "preversion": "npm run test",
+    "version": "npm run build",
+    "postversion": "git push"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged \"./src/**/*.ts\""
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.7",
+    "husky": "^9.0.11",
+    "jsdom": "^24.0.0",
+    "prettier": "^3.2.5",
+    "pretty-quick": "^4.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.10",
+    "vitest": "^1.5.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/debounce.es.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/debounce.umd.js"
+      }
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "main": "./dist/debounce.umd.js",
+  "module": "./dist/debounce.es.js"
+}
