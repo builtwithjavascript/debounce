@@ -1,6 +1,6 @@
 {
   "name": "@builtwithjavascript/debounce",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Debounce function hook useDebounce.",
   "author": "builtwithjavascript",
   "license": "MIT",
@@ -29,18 +29,11 @@
     "version": "npm run build",
     "postversion": "git push"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged \"./src/**/*.ts\""
-    }
-  },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.12.7",
-    "husky": "^9.0.11",
     "jsdom": "^24.0.0",
     "prettier": "^3.2.5",
-    "pretty-quick": "^4.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "vite": "^5.2.10",
