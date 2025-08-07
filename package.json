@@ -1,6 +1,6 @@
 {
   "name": "@builtwithjavascript/debounce",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Debounce function hook useDebounce.",
   "author": "builtwithjavascript",
   "license": "MIT",
@@ -22,7 +22,6 @@
     "build": "tsc --esModuleInterop && vite build && npm run build-types",
     "pub": "npm publish --access public",
     "test": "TESTING=true vitest run",
-    "test-watch": "TESTING=true vitest watch",
     "pretty": "prettier -w \"./src/**/*.ts\"",
     "version-patch": "npm run pretty && npm version patch -m \"Patch version\"",
     "preversion": "npm run test",
@@ -30,20 +29,19 @@
     "postversion": "git push"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.12.7",
-    "jsdom": "^24.0.0",
-    "prettier": "^3.2.5",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.10",
-    "vitest": "^1.5.0"
+    "@types/node": "^24.2.0",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.0",
+    "vitest": "^3.2.4"
   },
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/debounce.es.js"
@@ -51,8 +49,7 @@
       "require": {
         "types": "./dist/index.d.ts",
         "default": "./dist/debounce.umd.js"
-      },
-      "types": "./dist/index.d.ts"
+      }
     }
   },
   "types": "./dist/index.d.ts",

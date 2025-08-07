@@ -32,3 +32,10 @@ export type EventFilter<Args extends any[] = any[], This = any, Invoke extends A
   invoke: Invoke,
   options: FunctionWrapperOptions<Args, This>
 ) => ReturnType<Invoke> | Promisify<ReturnType<Invoke>>
+
+// New interface for the returned debounced function
+export interface DebouncedFnWithControl<T extends FunctionArgs> {
+  (...args: ArgumentsType<T>): Promisify<ReturnType<T>>
+  cancel(): void
+  flush(): Promise<Awaited<ReturnType<T>>> | undefined
+}
