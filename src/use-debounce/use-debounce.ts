@@ -11,51 +11,56 @@ import {
 } from './Models'
 
 /**
- * Create an EventFilter that debounce the events
+ * Create an EventFilter that debounces the events,
+ * and exposes cancel() + flush().
  */
 export function debounceFilter(ms: number, options: DebounceFilterOptions = {}) {
   let timer: ReturnType<typeof setTimeout> | undefined
-  let maxTimer: ReturnType<typeof setTimeout> | undefined | null
+  let maxTimer: ReturnType<typeof setTimeout> | undefined
   let lastPromise: Promise<any> | undefined
   let lastRejector: AnyFn = noop
+  let lastInvoker: (() => void) | undefined
 
-  const _clearTimeout = (timer: ReturnType<typeof setTimeout>) => {
-    clearTimeout(timer)
-    lastRejector()
-    lastRejector = noop
+  // only clears the timer—does NOT resolve/reject the promise
+  const clearTimerOnly = (t: ReturnType<typeof setTimeout>) => {
+    clearTimeout(t)
   }
 
-  const filter: EventFilter = (invoke) => {
+  const filter: EventFilter = (invoke, _opts) => {
     const duration = ms || 250
-    const maxDuration = options.maxWait || 1000
+    // only fire a max-wait if the user explicitly set options.maxWait
+    const maxDuration = options.maxWait != null ? options.maxWait : Infinity
 
-    // Store a new promise for this invocation
     lastPromise = new Promise((resolve, reject) => {
-      lastRejector = options.rejectOnCancel ? reject : resolve
+      // we only reject on cancel if the user opted in
+      lastRejector = options.rejectOnCancel ? reject : noop
 
-      if (timer) _clearTimeout(timer)
-
-      if (duration <= 0 || (maxDuration !== undefined && maxDuration <= 0)) {
-        if (maxTimer) {
-          _clearTimeout(maxTimer)
-          maxTimer = null
-        }
+      // this is the one true “call my function & resolve the promise”
+      lastInvoker = () => {
+        if (timer) clearTimerOnly(timer)
+        if (maxTimer) clearTimerOnly(maxTimer)
+        timer = maxTimer = undefined
         resolve(invoke())
+      }
+
+      // immediate path
+      if (duration <= 0 || maxDuration <= 0) {
+        lastInvoker()
         return
       }
 
-      if (maxDuration && !maxTimer) {
+      // schedule a max-wait only if finite
+      if (maxDuration < Infinity && !maxTimer) {
         maxTimer = setTimeout(() => {
-          if (timer) _clearTimeout(timer)
-          maxTimer = null
-          resolve(invoke())
+          lastInvoker!()
+          maxTimer = undefined
         }, maxDuration)
       }
 
+      // reset the normal debounce timer
+      if (timer) clearTimerOnly(timer)
       timer = setTimeout(() => {
-        if (maxTimer) _clearTimeout(maxTimer)
-        maxTimer = null
-        resolve(invoke())
+        lastInvoker!()
       }, duration)
     })
 
@@ -63,35 +68,43 @@ export function debounceFilter(ms: number, options: DebounceFilterOptions = {}) 
   }
 
   const cancel = () => {
-    if (timer) _clearTimeout(timer)
-    if (maxTimer) _clearTimeout(maxTimer)
+    if (timer) clearTimerOnly(timer)
+    if (maxTimer) clearTimerOnly(maxTimer)
     timer = maxTimer = undefined
+
+    // this is a user-triggered cancel: reject or resolve
+    lastRejector()
+    lastRejector = noop
+
     lastPromise = undefined
+    lastInvoker = undefined
   }
 
-  const flush = () => {
-    if (timer) {
-      _clearTimeout(timer)
-      if (maxTimer) _clearTimeout(maxTimer)
+  const flush = (): Promise<any> | undefined => {
+    if (timer && lastInvoker) {
+      clearTimerOnly(timer)
+      if (maxTimer) clearTimerOnly(maxTimer)
       timer = maxTimer = undefined
+      lastInvoker()
       return lastPromise
     }
     return undefined
   }
 
-  // Return an object containing the filter and control methods
   return { filter, cancel, flush }
 }
 
 /**
- * @internal
+ * Wraps your function `fn` with that filter,
+ * and exposes cancel() + flush() on the returned wrapper.
  */
 export function createFilterWrapper<T extends AnyFn>(filterControl: ReturnType<typeof debounceFilter>, fn: T) {
   function wrapper(this: any, ...args: ArgumentsType<T>): Promisify<ReturnType<T>> {
     return new Promise<Awaited<ReturnType<T>>>((resolve, reject) => {
-      Promise.resolve(filterControl.filter(() => fn.apply(this, args), { fn, thisArg: this, args }))
-        .then(resolve)
-        .catch(reject)
+      Promise.resolve(filterControl.filter(() => fn.apply(this, args), { fn, thisArg: this, args })).then(
+        resolve,
+        reject
+      )
     })
   }
 
@@ -103,19 +116,17 @@ export function createFilterWrapper<T extends AnyFn>(filterControl: ReturnType<t
 }
 
 /**
- * Debounce execution of a function.
+ * Public API:
  *
- * @param  fn          A function to be executed after delay milliseconds debounced.
- * @param  ms          A zero-or-greater delay in milliseconds. For event callbacks, values around 100 or 250 (or even higher) are most useful.
- * @param  options     Options
- *
- * @return A new, debounce, function.
+ * const db = useDebounce(myFn, 1000)
+ * db()                // schedules
+ * db.cancel()         // cancels & rejects (if rejectOnCancel)
+ * const val = await db.flush()  // forces immediate invoke, returns fn’s return
  */
 export function useDebounce<T extends FunctionArgs>(
   fn: T,
   ms: number,
   options: DebounceFilterOptions = {}
 ): DebouncedFnWithControl<T> {
-  // Use the new return type here
-  return createFilterWrapper(debounceFilter(ms || 250, options), fn)
+  return createFilterWrapper(debounceFilter(ms, options), fn)
 }

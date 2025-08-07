@@ -75,3 +75,5 @@ async function doRequest() {
 Code is from @vueuse npm package and used accordingly to the MIT license:
 https://vueuse.org/shared/useDebounceFn/
 
+## Version:
+- 1.0.5 Added .cancel() and .flush() support
