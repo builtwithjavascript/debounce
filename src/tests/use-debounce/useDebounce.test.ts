@@ -1,5 +1,5 @@
 import { vi, describe, beforeEach, expect, it, Mock } from 'vitest'
-import { useDebounce } from '../../use-debounce'
+import { useDebounce } from '../../use-debounce/use-debounce'
 
 vi.useFakeTimers()
 

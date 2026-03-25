@@ -1,6 +1,6 @@
 {
   "name": "@builtwithjavascript/debounce",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Debounce function hook useDebounce.",
   "author": "builtwithjavascript",
   "license": "MIT",
@@ -18,9 +18,9 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build-types": "tsc src/index.ts --esModuleInterop --declaration --emitDeclarationOnly --outDir dist",
-    "build": "tsc --esModuleInterop && vite build && npm run build-types",
-    "pub": "npm publish --access public",
+    "build-types": "tsc --project tsconfig.dts.json",
+    "build": "npm run pretty && tsc --esModuleInterop && vite build && npm run build-types",
+    "pub": "npm run build; npm publish --access public --otp=",
     "test": "TESTING=true vitest run",
     "pretty": "prettier -w \"./src/**/*.ts\"",
     "version-patch": "npm run pretty && npm version patch -m \"Patch version\"",
@@ -29,12 +29,12 @@
     "postversion": "git push"
   },
   "devDependencies": {
-    "@types/node": "^24.2.0",
-    "jsdom": "^26.1.0",
-    "prettier": "^3.6.2",
-    "typescript": "^5.9.2",
-    "vite": "^7.1.0",
-    "vitest": "^3.2.4"
+    "@types/node": "^25.5.0",
+    "jsdom": "^29.0.1",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.2",
+    "vitest": "^4.1.1"
   },
   "files": [
     "dist"
@@ -42,14 +42,8 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/debounce.es.js"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/debounce.umd.js"
-      }
+      "import": "./dist/debounce.es.js",
+      "require": "./dist/debounce.umd.js"
     }
   },
   "types": "./dist/index.d.ts",
